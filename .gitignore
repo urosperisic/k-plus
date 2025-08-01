@@ -1,0 +1,48 @@
+# Virtual environment
+venv/
+ENV/
+env/
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django files
+*.log
+*.pot
+*.pyc
+*.pyo
+*.db
+*.sqlite3
+db.sqlite3
+media/
+staticfiles/
+
+# Environment variables
+.env
+.env.*
+
+# VS Code
+.vscode/
+
+# Migrations (optional)
+**/migrations/*.py
+!**/migrations/__init__.py
+
+# Pytest / test artifacts
+htmlcov/
+.tox/
+.nox/
+.coverage
+coverage.xml
+*.cover
+.cache
+.pytest_cache/
+
+# macOS
+.DS_Store
+
+# System
+Thumbs.db

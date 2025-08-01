@@ -1,0 +1,77 @@
+CREATE DATABASE fakultet;
+
+CREATE TABLE studenti (
+    student_id INT PRIMARY KEY,
+    ime VARCHAR(50),
+    prezime VARCHAR(50),
+    godina_upisa INT
+);
+
+CREATE TABLE predmeti (
+    predmet_id INT PRIMARY KEY,
+    naziv_predmeta VARCHAR(100),
+    espb INT
+);
+
+CREATE TABLE ispiti (
+    ispit_id INT PRIMARY KEY,
+    student_id INT,
+    predmet_id INT,
+    datum_polaganja DATE,
+    ocena INT,
+    FOREIGN KEY (student_id) REFERENCES studenti(student_id),
+    FOREIGN KEY (predmet_id) REFERENCES predmeti(predmet_id)
+);
+
+CREATE TABLE ispiti (
+    ispit_id INT PRIMARY KEY,
+    student_id INT,
+    predmet_id INT,
+    datum_polaganja DATE,
+    ocena INT,
+    FOREIGN KEY (student_id) REFERENCES studenti(student_id),
+    FOREIGN KEY (predmet_id) REFERENCES predmeti(predmet_id)
+);
+
+-----
+
+INSERT INTO studenti VALUES (1, 'Ana', 'Marković', 2020);
+INSERT INTO studenti VALUES (2, 'Petar', 'Jovanović', 2019);
+INSERT INTO studenti VALUES (3, 'Ivana', 'Nikolić', 2021);
+INSERT INTO studenti VALUES (4, 'Nikola', 'Simić', 2022);
+
+INSERT INTO predmeti VALUES (101, 'Matematika 1', 8);
+INSERT INTO predmeti VALUES (102, 'Programiranje', 6);
+INSERT INTO predmeti VALUES (103, 'Baze Podataka', 7);
+
+INSERT INTO ispiti VALUES (1001, 1, 101, '2023-06-15', 9);
+INSERT INTO ispiti VALUES (1002, 1, 102, '2023-06-18', 8);
+INSERT INTO ispiti VALUES (1003, 2, 101, '2022-09-10', 7);
+INSERT INTO ispiti VALUES (1004, 3, 103, '2024-01-25', 10);
+
+-----
+-- INNER JOIN – Prikazuje samo studente koji su polagali ispite.
+CREATE VIEW view_student_ispiti AS
+SELECT 
+    s.student_id,
+    s.ime,
+    s.prezime,
+    p.naziv_predmeta,
+    i.datum_polaganja,
+    i.ocena
+FROM studenti s
+INNER JOIN ispiti i ON s.student_id = i.student_id
+INNER JOIN predmeti p ON i.predmet_id = p.predmet_id;
+
+--  JOIN – Prikazuje sve studente, bez obzira da li su polagali ispite ili ne.
+CREATE VIEW view_student_ispiti_left AS
+SELECT 
+    s.student_id,
+    s.ime,
+    s.prezime,
+    p.naziv_predmeta,
+    i.datum_polaganja,
+    i.ocena
+FROM studenti s
+LEFT JOIN ispiti i ON s.student_id = i.student_id
+LEFT JOIN predmeti p ON i.predmet_id = p.predmet_id;
