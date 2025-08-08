@@ -1,0 +1,70 @@
+CREATE DATABASE faculty;
+
+CREATE TABLE students (
+    student_id INT PRIMARY KEY,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    enrollment_year INT
+);
+
+CREATE TABLE subjects (
+    subject_id INT PRIMARY KEY,
+    subject_name VARCHAR(100),
+    espb INT
+);
+
+CREATE TABLE exams (
+    exam_id INT PRIMARY KEY,
+    student_id INT,
+    subject_id INT,
+    exam_date DATE,
+    grade INT,
+    FOREIGN KEY (student_id) REFERENCES students(student_id),
+    FOREIGN KEY (subject_id) REFERENCES subjects(subject_id)
+);
+
+----- 
+
+INSERT INTO students VALUES (1, 'Ana', 'Marković', 2020);
+INSERT INTO students VALUES (2, 'Petar', 'Jovanović', 2019);
+INSERT INTO students VALUES (3, 'Ivana', 'Nikolić', 2021);
+INSERT INTO students VALUES (4, 'Nikola', 'Simić', 2022);
+
+INSERT INTO subjects VALUES (101, 'Mathematics 1', 8);
+INSERT INTO subjects VALUES (102, 'Programming', 6);
+INSERT INTO subjects VALUES (103, 'Databases', 7);
+
+INSERT INTO exams VALUES (1001, 1, 101, '2023-06-15', 9);
+INSERT INTO exams VALUES (1002, 1, 102, '2023-06-18', 8);
+INSERT INTO exams VALUES (1003, 2, 101, '2022-09-10', 7);
+INSERT INTO exams VALUES (1004, 3, 103, '2024-01-25', 10);
+
+-----
+
+-- INNER JOIN – Displays only students who have taken exams.
+
+CREATE VIEW view_student_exams AS
+SELECT 
+    s.student_id,
+    s.first_name,
+    s.last_name,
+    sub.subject_name,
+    e.exam_date,
+    e.grade
+FROM students s
+INNER JOIN exams e ON s.student_id = e.student_id
+INNER JOIN subjects sub ON e.subject_id = sub.subject_id;
+
+-- LEFT JOIN – Displays all students, regardless of whether they have taken exams or not.
+
+CREATE VIEW view_student_exams_left AS
+SELECT 
+    s.student_id,
+    s.first_name,
+    s.last_name,
+    sub.subject_name,
+    e.exam_date,
+    e.grade
+FROM students s
+LEFT JOIN exams e ON s.student_id = e.student_id
+LEFT JOIN subjects sub ON e.subject_id = sub.subject_id;

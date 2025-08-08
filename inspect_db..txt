@@ -1,0 +1,145 @@
+SELECT schemaname, tablename
+FROM 
+pg_catalog.pg_tables
+WHERE schemaname NOT IN ('pg_catalog', 'information_schema');
+
+----- size
+
+SELECT pg_size_pretty(pg_database_size('dvdrental'));
+
+----- size by tales
+
+SELECT 
+  relname AS table_name,
+  pg_size_pretty(pg_total_relation_size(relid)) AS total_size
+FROM 
+  pg_catalog.pg_statio_user_tables
+ORDER BY 
+  pg_total_relation_size(relid) DESC;
+
+----- rows
+
+SELECT 
+    relname AS table_name,
+    n_live_tup AS row_count
+FROM 
+    pg_stat_user_tables
+ORDER BY 
+    n_live_tup DESC;
+
+----- foreign keys
+
+SELECT
+    conname AS constraint_name,
+    conrelid::regclass AS table_name,
+    a.attname AS column_name,
+    confrelid::regclass AS referenced_table,
+    af.attname AS referenced_column
+FROM 
+    pg_constraint AS c
+JOIN 
+    pg_class ON c.conrelid = pg_class.oid
+JOIN 
+    pg_attribute AS a ON a.attnum = ANY (c.conkey) AND a.attrelid = c.conrelid
+JOIN 
+    pg_attribute AS af ON af.attnum = ANY (c.confkey) AND af.attrelid = c.confrelid
+WHERE 
+    contype = 'f'
+ORDER BY 
+    table_name, constraint_name;
+
+--- after foreign keys
+
+SELECT 
+    f.title AS film_title,
+    c.first_name || ' ' || c.last_name AS customer_name,
+    r.rental_date,
+    a.address,
+    a.city_id
+FROM 
+    film f
+JOIN inventory i ON f.film_id = i.film_id
+JOIN rental r ON i.inventory_id = r.inventory_id
+JOIN customer c ON r.customer_id = c.customer_id
+JOIN address a ON c.address_id = a.address_id
+LIMIT 50;
+
+----- 'city'
+
+SELECT column_name, data_type, is_nullable, character_maximum_length
+FROM information_schema.columns
+WHERE table_schema = 'public' AND table_name = 'city';
+
+----- 'city'
+
+SELECT a.attname AS column_name,
+       t.typname AS data_type
+FROM pg_attribute a
+JOIN pg_class c ON a.attrelid = c.oid
+JOIN pg_type t ON a.atttypid = t.oid
+WHERE c.relname = 'city' AND a.attnum > 0 AND NOT a.attisdropped;
+
+----- 'city'
+
+SELECT *
+FROM pg_indexes
+WHERE tablename = 'city';
+
+-----
+
+3. Materialized Views
+4. Dropping Views
+5. Listing Views
+
+-----
+
+Stored Procedures
+
+Stored blocks of code inside the database
+Executed directly within the database
+Enable reuse of business logic
+In PostgreSQL (version 11+): use CREATE PROCEDURE and call with CALL
+
+1. Example: Audit Log on INSERT
+
+CREATE TABLE users_audit (
+  user_id INT,
+  name TEXT,
+  email TEXT,
+  action_time TIMESTAMP DEFAULT now()
+);
+
+2. Trigger function to log inserts
+
+CREATE OR REPLACE FUNCTION log_user_insert()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO users_audit(user_id, name, email)
+  VALUES (NEW.id, NEW.name, NEW.email);
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+3. Create the trigger
+
+CREATE TRIGGER trigger_log_user_insert
+AFTER INSERT ON users
+FOR EACH ROW
+EXECUTE FUNCTION log_user_insert();
+
+Trigger Timing Options
+
+Trigger Time    Description
+BEFORE INSERT   Validate or modify data before insert
+AFTER UPDATE    Log or react after data changes
+INSTEAD OF      Used with views
+
+Trigger Events and Use Cases
+
+Event	  Use Case
+INSERT	  Logging new records
+UPDATE	  Checking or logging data changes
+DELETE	  Archiving before deletion
+TRUNCAT   Preventing or logging full table deletions
+
+-----

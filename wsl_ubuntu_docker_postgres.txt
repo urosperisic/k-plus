@@ -1,0 +1,162 @@
+wsl --version
+
+wsl --update
+
+wsl --set-default-version 2
+
+---------- Ubuntu
+
+wsl --install -d Ubuntu [t Ra]
+
+sudo apt update
+sudo apt upgrade -y
+
+---------- Docker
+
+sudo apt install ca-certificates curl gnupg lsb-release -y
+
+sudo mkdir -p /etc/apt/keyrings
+
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+sudo apt update
+sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+
+sudo service docker start
+
+sudo usermod -aG docker $USER
+
+newgrp docker
+
+docker run hello-world
+
+docker image ls
+docker rmi hello-world
+
+docker ps -a
+docker stop 4a982669780f
+
+docker volume ls
+docker system prune -a --volumes
+
+---------- Postgers
+
+docker pull postgres
+
+docker volume create pgdata
+
+docker network create pg-net
+
+docker run -d \
+  --name pu \
+  --network pg-net \
+  --restart unless-stopped \
+  -e POSTGRES_PASSWORD=pu \
+  -p 5432:5432 \
+  -v pgdata:/var/lib/postgresql/data \
+  postgres
+
+docker exec -it pu psql -U postgres
+
+\c
+
+docker stop pu
+docker rm pu
+
+---------- pgAdmin
+
+docker run -d \
+  --name pgadmin \
+  --network pg-net \
+  --restart unless-stopped \
+  -e PGADMIN_DEFAULT_EMAIL=admin@admin.com \
+  -e PGADMIN_DEFAULT_PASSWORD=admin \
+  -p 8080:80 \
+  -v pgadmin_data:/var/lib/pgadmin \
+  dpage/pgadmin4
+
+http://localhost:8080
+
+docker stop pgadmin
+docker rm pgadmin
+
+---------- pg_dump and pg_restore
+
+CREATE DATABASE testbaza;
+
+\c testbaza
+
+CREATE TABLE osobe (
+    id SERIAL PRIMARY KEY,
+    ime TEXT NOT NULL,
+    godine INT
+);
+
+INSERT INTO osobe (ime, godine) VALUES
+('Ana', 25),
+('Marko', 32),
+('Ivana', 40);
+
+SELECT * FROM osobe;
+
+\q
+
+-- ubuntu --
+docker exec -t pu pg_dump -U postgres -Fc -d testbaza > testbaza.dump
+ls -lh testbaza.dump
+
+-- docker --
+docker exec -it pu psql -U postgres -c "CREATE DATABASE obnova;"
+
+docker exec -it pu bash -c "pg_dump -U postgres -Fc -d testbaza -f /var/lib/postgresql/data/testbaza.dump"
+
+docker exec -it pu pg_restore -U postgres -d obnova /var/lib/postgresql/data/testbaza.dump
+
+docker exec -it pu ls -lh /var/lib/postgresql/data/testbaza.dump
+
+docker exec -it pu rm /var/lib/postgresql/data/testbaza.dump
+
+-- container - local --
+
+docker exec -it pu pg_dump -U postgres -Fc testbaza -f /tmp/testbaza.dump
+
+docker cp pu:/tmp/testbaza.dump /mnt/c/Users/Korisnik/Downloads/testbaza.dump
+
+-- local - container --
+
+docker exec -it pu psql -U postgres -c "CREATE DATABASE obnova;"
+
+docker cp /mnt/c/Users/Korisnik/Downloads/testbaza.dump pu:/tmp/testbaza.dump
+
+docker exec -it pu pg_restore -U postgres -d obnova /tmp/testbaza.dump
+
+wsl hostname -I [ 172.25.6.79 172.17.0.1 172.18.0.1 ]
+
+docker ps
+
+pgAdmin [
+    172.25.6.79
+    5432
+    postgres
+    pu
+]
+
+if not work:
+    sudo apt install socat
+    socat TCP-LISTEN:5433,fork TCP:localhost:5432
+
+    pgAdmin [
+        localhost
+        5433
+        postgres
+        pu
+    ]
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------

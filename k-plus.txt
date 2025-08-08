@@ -1,0 +1,14 @@
+python -m venv venv
+venv\Scripts\activate
+
+pip install django djangorestframework djangorestframework-simplejwt psycopg2-binary drf-spectacular python-decouple django-cors-headers
+
+pip freeze > requirements.txt
+pip install -r requirements.txt
+
+django-admin startproject kplus .
+python manage.py startapp accounts
+
+python manage.py makemigrations
+python manage.py migrate
+python manage.py createsuperuser

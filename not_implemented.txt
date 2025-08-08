@@ -1,0 +1,53 @@
+Testovi
+
+Kao što si i sam pomenuo, nema testova.
+
+Preporučujem da napišeš barem osnovne testove:
+
+Jedinične testove za serializer-e (validacije, kreiranje korisnika)
+
+Testove za view-e (registracija, login, logout, menjanje rola, brisanje korisnika)
+
+Testove za permissions (da li admin ima prava, običan korisnik nema itd.)
+
+Testovi su ključni za pouzdanu produkciju i buduće promene.
+
+
+
+Validacije i sanitizacija
+
+Dobra je praksa dodatno validirati podatke ako je potrebno (npr. email format, dužine polja), mada se već koristi Django default i validator za password.
+
+Proveri da li su svi potencijalni edge case-ovi pokriveni (npr. brisanje sopstvenog naloga? Trenutno nije dozvoljeno menjanje sopstvene role, ali brisanje korisnika može biti?)
+
+
+
+Logovanje grešaka
+
+Logovanje ide samo na konzolu. Za produkciju možda želiš dodatni handler koji šalje greške u sistem za monitoring (Sentry, Logstash itd.).
+
+
+
+Bezbednost
+
+Proveri da li su svi osetljivi end-pointi pokriveni permission klasama (deluje da jesu).
+
+Dodaj rate limiting na logout endpoint? (trenutno ne)
+
+Implementacija CORS-a je dobra, proveri da li su svi potrebni origin-i dodati u CORS_ALLOWED_ORIGINS.
+
+
+
+Swagger/OpenAPI pristup
+
+Možda želiš da omogućiš endpoint za dokumentaciju samo u dev modu, ili obezbediš autentifikaciju za pristup dokumentaciji u produkciji.
+
+
+
+Migracije i deployment
+
+Proveri da li migracije rade uredno.
+
+Proveri podešavanja za statične fajlove (u produkciji treba ih servirati preko CDN-a ili web servera).
+
+Dodaj SECURE_PROXY_SSL_HEADER ako koristiš reverzni proxy kao Nginx ili Heroku.
