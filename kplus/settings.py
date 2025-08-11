@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'corsheaders',  # >>> ADDED FOR PRODUCTION: CORS
     # internal
     'accounts',
+    'manutd',
 ]
 
 MIDDLEWARE = [
